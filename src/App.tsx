@@ -1,24 +1,23 @@
 import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import GameCanvas from './components/GameCanvas/GameCanvas';
+import css from './styles/styles.module.css'
+import { makeMove } from './utils';
 
 function App() {
+
+  const [playerPosition, setPlayerPosition] = React.useState(15)
+
+ 
+    setInterval(() => {
+      makeMove("UP", playerPosition, setPlayerPosition)
+    }, 2000)
+    
+
+  
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+    <div className={css.wrapper}>
+      <GameCanvas gridSize={45} playerPosition={playerPosition} />
     </div>
   );
 }
