@@ -1,5 +1,7 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import css from './styles/styles.module.css';
+import {useSelector} from 'react-redux'
+import { sanitizeDirectionString } from '../../utils';
 
 interface CharacterProps {
     row: number;
@@ -7,12 +9,25 @@ interface CharacterProps {
     isMoving: boolean
 }
 
-const Character: React.FC<CharacterProps> = ({ row, direction, isMoving }) => {
+const Character: React.FC<CharacterProps> = ({ row, isMoving }) => {
     const [rowClass, setRowClass] = useState("");
     const [animationRow, setAnimationRow] = useState("")
+    const [xPos, setXPos] = useState<number | null>(null)
+    const [yPos, setYPos] = useState<number | null>(null)
+    const {position, direction} = useSelector((state:any) => state.playerSlice)
+    const characterDiv:any= useRef()
+
 
     useEffect(() => {
-        switch(direction) {
+        if(direction) {
+            if(isMoving) {
+                const {x, y} = characterDiv.current.getBoundingClientRect()
+                setXPos(x)
+                setYPos(y)
+            }
+            
+            
+        switch(sanitizeDirectionString(direction)) {
             case "UP":
                 setRowClass("sprite-row-4");
                 setAnimationRow("spriteAnimationRow4")
@@ -34,10 +49,18 @@ const Character: React.FC<CharacterProps> = ({ row, direction, isMoving }) => {
                 setAnimationRow("spriteAnimationRow1")
                 break;
         }
-    }, [direction, row]);
+    }
+    }, [direction, row, isMoving]);
+
+    const positionStyle: React.CSSProperties = {
+        position: 'absolute',
+        ...(xPos !== null ? { left: `${xPos}px` } : {}),
+        ...(yPos !== null ? { top: `${yPos}px` } : {}),
+        transition: 'left 0.5s, top 0.5s', // smooth transition for left and top properties
+    };
 
     return (
-       isMoving ? <div className={`${css.sprite} ${css[rowClass]}  ${css[animationRow]}`}></div> : <div className={`${css.spriteIdle} ${css[rowClass]}`}></div>
+       isMoving ? <div style={positionStyle} ref={characterDiv} className={`${css.character} ${css.sprite} ${css[rowClass]}  ${css[animationRow]}`}></div> : <div className={`${css.spriteIdle} ${css[rowClass]}`}></div>
     );
 }
 

@@ -7,7 +7,7 @@ class PythonService {
     try {
       const response = await axios.post(
         process.env.FLASK_SERVER_URL as string,
-        {imageURL:data},
+        {data:data},
       );
       
       return {

@@ -32,6 +32,11 @@
     background-position: 0px -384px;
   }
 
+  .character {
+    transition: transform 0.2s ease-in-out;
+    position: absolute;
+}
+
   @keyframes animate-sprite-row-1 {
     from { background-position: 0px 0px; }
     to { background-position: -512px 0px; } /* assuming 8 frames * 64px per frame */

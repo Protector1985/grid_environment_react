@@ -8,3 +8,9 @@
     justify-content:center;
     align-items:center;
 }
+
+.image {
+    object-fit: contain;
+    width: 100%;
+    height: auto;
+}

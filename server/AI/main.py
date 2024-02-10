@@ -2,9 +2,9 @@ from flask import Flask, request
 
 from flask_cors import CORS
 
-from lib.Resnet import Resnet
+from lib.RL_processor import RL_PROCESSOR
 
-resnet = Resnet()
+RL = RL_PROCESSOR()
 
 
 app = Flask(__name__)
@@ -16,8 +16,9 @@ CORS(app, resources={r"*": {"origins": "*"}})
 def processor():
     if request.method == "POST":
         data = request.json
-        data = data['imageURL']
-        move = resnet.resnet_processor(data)
+        incoming_move_data = data['data']['data']
+        b64_img = data['data']['dataURL']
+        move = RL.rl_processor(b64_img, incoming_move_data)
         return move
     else:
         return "Can't process GET"
