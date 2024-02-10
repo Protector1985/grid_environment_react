@@ -18,7 +18,7 @@ def processor():
         data = request.json
         incoming_move_data = data['data']['data']
         b64_img = data['data']['dataURL']
-        action = RL.move_processor(b64_img, incoming_move_data)
+        action = RL.decide_action(b64_img, incoming_move_data)
         
         
         

@@ -57,7 +57,7 @@ function App() {
       if(trainingStarted) {
         const timeout = setTimeout(() => {
           convertToImage()
-        }, 1000)
+        }, 20000)
       return () => clearTimeout(timeout)
     }
     },[position, trainingStarted, direction, actionReward])

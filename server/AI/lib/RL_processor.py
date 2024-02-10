@@ -6,8 +6,11 @@ import torch
 import torch.nn.functional as torchFunc
 import torchvision.transforms as transforms
 from lib.MyCNN import MyCNN
+from lib.Experience_Replay import Experience_Replay
 import numpy as np
 
+
+experience = Experience_Replay()
 cnn = MyCNN()
 
 
@@ -24,6 +27,7 @@ class RL_PROCESSOR:
                 2: "LEFT",
                 3: "RIGHT"
             }
+        self.experiences = []
         
     def feed_to_model(self, observation):
         image_tensor, direction_tensor = observation
@@ -64,6 +68,8 @@ class RL_PROCESSOR:
         
         return image_tensor, direction_tensor
     
+   
+    
     def decide_action(self, b64_img, incoming_move_data):
         
         #buffer from node.js => image
@@ -74,6 +80,14 @@ class RL_PROCESSOR:
         move_direction = incoming_move_data['direction']
         # The decoded data can be used as a file-like object
         image = Image.open(BytesIO(data))
+        
+        exp = [[123], reward, move_direction]
+        
+        experience.partial_experience(exp)
+        
+   
+        
+        
         
         image_tensor, direction_tensor = self.pre_processor(image, move_direction)
         qval = cnn.forward(image_tensor, direction_tensor)
