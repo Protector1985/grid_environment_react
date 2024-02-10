@@ -18,8 +18,11 @@ def processor():
         data = request.json
         incoming_move_data = data['data']['data']
         b64_img = data['data']['dataURL']
-        move = RL.rl_processor(b64_img, incoming_move_data)
-        return move
+        action = RL.move_processor(b64_img, incoming_move_data)
+        
+        
+        
+        return action
     else:
         return "Can't process GET"
     
