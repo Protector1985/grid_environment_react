@@ -1,5 +1,5 @@
 from flask import Flask, request
-
+import logging
 from flask_cors import CORS
 
 from lib.RL_processor import RL_PROCESSOR
@@ -29,3 +29,4 @@ def processor():
 
 if __name__ == "__main__":
     app.run(port=5001, debug=True)
+    app.logger.setLevel(logging.ERROR)

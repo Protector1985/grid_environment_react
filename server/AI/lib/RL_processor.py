@@ -18,9 +18,9 @@ class RL_PROCESSOR:
     
     
     def __init__(self):
-        self.lossFunction = torch.nn.MSELoss()
         self.gamma = 0.9
         self.epsilon = 1.0
+        self.decayAmount = 0.0001
         self.moves = {
                 0: "DOWN",
                 1: "UP",
@@ -32,8 +32,7 @@ class RL_PROCESSOR:
     def feed_to_model(self, observation):
         image_tensor, direction_tensor = observation
         
-        
-        print(qvals)
+
         
     def find_key_by_value(self, value_to_find):
         for key, value in self.moves.items():
@@ -45,7 +44,7 @@ class RL_PROCESSOR:
             random_key = random.choice(list(self.moves.keys()))
 
             # Return the selected move
-            return {"makeMove": self.moves[random_key]}
+            return self.moves[random_key]
   
   
     def pre_processor(self, observed_image, observed_direction, max_size=256):
@@ -78,26 +77,42 @@ class RL_PROCESSOR:
         data = base64.b64decode(encoded)
         reward = incoming_move_data['reward']
         move_direction = incoming_move_data['direction']
+       
         # The decoded data can be used as a file-like object
         image = Image.open(BytesIO(data))
-        
-        exp = [[123], reward, move_direction]
-        
-        experience.partial_experience(exp)
-        
-   
-        
-        
+     
+        exp = [image, reward, move_direction]
         
         image_tensor, direction_tensor = self.pre_processor(image, move_direction)
         qval = cnn.forward(image_tensor, direction_tensor)
-            
-        if random.random()> self.epsilon:
-            action_ = np.random.randint(0,4)
+        
+        
+        experience.partial_experience(exp)
+        replay_result = experience.run_experience_replay(cnn, self.gamma)
+        
+        losses = []
+        if replay_result != None:
+            q1, Y, action_batch = replay_result
+            losses = cnn.back_propogation(q1, Y, action_batch)
+       
+   
+        if self.epsilon > 0.01:
+            self.epsilon -= self.decayAmount
+        
+   
+        if random.random() < self.epsilon:
+            action_ = self.pick_random_move()
+            action_ = self.find_key_by_value(action_)
         else: 
-            action_ = torch.argmax(qval.detach()).item()
-                   
+            action_ = torch.argmax(qval.detach()).item()      
         del image
+        
+        average_loss = 0
+        if len(losses) > 0:
+            average_loss = sum(losses) / len(losses)
+        
+        print(f"Average_loss: {average_loss}") 
+        
         return {"makeMove": self.moves[action_]}
         
        
