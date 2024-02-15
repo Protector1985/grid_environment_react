@@ -22,44 +22,24 @@ const Tile:React.FC<Tile> = ({playerDirection, playerPosition, index}) => {
         } else if (cheap.includes(index) && index !== playerPosition) {
             return <img className={css.image} src={require("../assets/cheap/1.png")} />
         
-        } else if (goal === index && index !== playerPosition){
-            return <img className={css.image} src={require("../assets/goal/1.png")} />
-        
-        } else if (badGoal === index && index !== playerPosition){ 
-            return <img className={css.image} src={require("../assets/badGoal/1.png")} />
-        
         //Agent hit an expensive item === good
         } else if (expensive.includes(index) && index === playerPosition) {
             const newarr = expensive.filter((item:any) => index !== item);
             dispatch(removeIndex(index))
             dispatch(setExpensiveArray(newarr));
-            dispatch(setActionReward(0.5))
+            dispatch(setActionReward(1))
             if(newarr.length == 0) {
-                dispatch(setGoodGoal(index))
+                dispatch(addLevel())
             } 
             return <Character isMoving={true} direction={playerDirection} row={1} />
         
-        } else if (badGoal === index && index === playerPosition) {
-            dispatch(removeIndex(index))
-            dispatch(resetBadGoal());
-            dispatch(decreaseLevel())
-            dispatch(resetGoodGoal())
-            dispatch(setActionReward(-1.0))
-        } else if (goal === index && index === playerPosition) {
-            dispatch(removeIndex(index))
-            dispatch(resetGoodGoal());
-            dispatch(resetBadGoal())
-            dispatch(addLevel())
-            dispatch(setActionReward(1.0))
-            return <Character isMoving={true} direction={playerDirection} row={1} />
-            
         } else if (cheap.includes(index) && index === playerPosition) {
             const newarr = cheap.filter((item:any) => index !== item); 
             dispatch(removeIndex(index))
             dispatch(setCheapArray(newarr)); 
             dispatch(setActionReward(-0.5))
             if(newarr.length == 0) {
-                dispatch(setBadGoal(index))
+                dispatch(addLevel())
             } 
             return <Character isMoving={true} direction={playerDirection} row={1} />
         

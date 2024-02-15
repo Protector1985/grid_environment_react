@@ -62,12 +62,12 @@ export const canvasSlice = createSlice({
             return index;
         };
 
-        const cheapItems = Array.from({length: state.level >= 0 ? state.level : 0}, () => generateUniqueIndex());
+        const cheapItems = Array.from({length: 1}, () => generateUniqueIndex());
         cheapItems.forEach(item => {
           state.cheap.push(item)
         });
 
-        const expensiveItems = Array.from({length: state.level >= 0 ? state.level : 0}, () => generateUniqueIndex());
+        const expensiveItems = Array.from({length: 3}, () => generateUniqueIndex());
         expensiveItems.forEach(item => {
           state.expensive.push(item)
         });

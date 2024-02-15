@@ -23,9 +23,7 @@ class PythonController extends PythonService {
 
   //BELOW HAS TO BE ERROR FUNCTION otherwise this.sendData is undefined due to context
   submitToFlask = async (req: Request, res: Response) => {
-  
     const resp = await this.sendData(req.body);
-    console.log(resp)
     res.send(resp)
   };
 }

@@ -7,9 +7,10 @@ import torch.nn.functional as torchFunc
 class Experience_Replay:
     
     def __init__(self):
-        self.capacity = 1000
-        self.batch_size = 6
+        self.capacity = 500
+        self.batch_size = 3
         self.buffer = []
+        self.bufferlength = len(self.buffer)
         self.position = 0
         self.partial = []
         self.moves = {
@@ -46,9 +47,9 @@ class Experience_Replay:
             mini_batch = random.sample(self.buffer, self.batch_size)
             return mini_batch
         
-    def pre_processor(self, observed_image, observed_direction, max_size=256):
+    def pre_processor(self, observed_image, observed_direction):
         transform = transforms.Compose([
-            transforms.Resize(max_size),  # Resizes the smaller edge to max_size while maintaining aspect ratio
+            # transforms.Resize(max_size),  # Resizes the smaller edge to max_size while maintaining aspect ratio
             transforms.ToTensor(),  # Convert the PIL Image to a tensor
             transforms.Lambda(lambda x: x[:3, :, :]),  # Keep only the first 3 channels (RGB)
             transforms.Lambda(lambda x: x / 255)
@@ -95,8 +96,8 @@ class Experience_Replay:
                 return q1, Y, action_batch
                 
     def run_experience_replay(self, cnn, gamma):
-        print(len(self.buffer))
         if len(self.buffer) > self.batch_size:
+            bufferLength = self.bufferlength
             q1, Y, action_batch = self.get_batches(self.get_sample(), cnn, gamma)
-            return q1, Y, action_batch
+            return q1, Y, action_batch, bufferLength
         

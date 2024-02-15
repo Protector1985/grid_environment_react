@@ -6,7 +6,6 @@ from lib.RL_processor import RL_PROCESSOR
 
 RL = RL_PROCESSOR()
 
-
 app = Flask(__name__)
 
 #allow all origins for simplicity
@@ -19,14 +18,17 @@ def processor():
         incoming_move_data = data['data']['data']
         b64_img = data['data']['dataURL']
         action = RL.decide_action(b64_img, incoming_move_data)
-        
-        
-        
+    
         return action
     else:
         return "Can't process GET"
     
 
 if __name__ == "__main__":
-    app.run(port=5001, debug=True)
+     # Set logging level for Flask's logger
     app.logger.setLevel(logging.ERROR)
+
+    # Set logging level for Werkzeug's logger
+    log = logging.getLogger('werkzeug')
+    log.setLevel(logging.ERROR)
+    app.run(port=5001, debug=True)

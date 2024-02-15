@@ -20,7 +20,10 @@ class RL_PROCESSOR:
     def __init__(self):
         self.gamma = 0.9
         self.epsilon = 1.0
-        self.decayAmount = 0.0001
+        self.total_rewards = []
+        self.decayAmount = 0.0002
+        self.move_number = 0
+        self.cachedStates = []
         self.moves = {
                 0: "DOWN",
                 1: "UP",
@@ -45,9 +48,18 @@ class RL_PROCESSOR:
 
             # Return the selected move
             return self.moves[random_key]
+        
+    def pushState(self, image_state):
+        if len(self.cachedStates) < 2:
+            self.cachedStates.append(image_state)
+        elif len(self.cachedStates) == 2:
+            self.cachedStates.pop(0)
+            self.cachedStates.append(image_state)
+            
+            
   
   
-    def pre_processor(self, observed_image, observed_direction, max_size=256):
+    def pre_processor(self, observed_image, observed_direction, max_size=1024 ):
         
         transform = transforms.Compose([
             transforms.Resize(max_size),  # Resizes the smaller edge to max_size while maintaining aspect ratio
@@ -70,7 +82,9 @@ class RL_PROCESSOR:
    
     
     def decide_action(self, b64_img, incoming_move_data):
-        
+        losses_arr = []
+        bufferLength = 0
+        average_loss = 0
         #buffer from node.js => image
         header, encoded = b64_img.split(",", 1)
         
@@ -80,22 +94,30 @@ class RL_PROCESSOR:
        
         # The decoded data can be used as a file-like object
         image = Image.open(BytesIO(data))
-     
+        
         exp = [image, reward, move_direction]
         
-        image_tensor, direction_tensor = self.pre_processor(image, move_direction)
-        qval = cnn.forward(image_tensor, direction_tensor)
+        '''adds image to cache state so that previous image can be retrieved
+        for direction and reward that is coming with the new data.'''
+        self.pushState(image)
+        
+    
+        if len(self.cachedStates) == 2:
+            image_tensor, direction_tensor = self.pre_processor(self.cachedStates[1], move_direction)
+            qval = cnn.forward(image_tensor, direction_tensor)
+            
+            losses = cnn.back_propogation(qval, self.gamma, reward, move_direction, self.moves)
+            losses_arr = losses
+           
+        # experience.partial_experience(exp)
+        # replay_result = experience.run_experience_replay(cnn, self.gamma)
         
         
-        experience.partial_experience(exp)
-        replay_result = experience.run_experience_replay(cnn, self.gamma)
-        
-        losses = []
-        if replay_result != None:
-            q1, Y, action_batch = replay_result
-            losses = cnn.back_propogation(q1, Y, action_batch)
+        # if replay_result != None:
+        #     q1, Y, action_batch, bufferLength = replay_result
+        #     losses = cnn.back_propogation_experience(q1, Y, action_batch)
+            
        
-   
         if self.epsilon > 0.01:
             self.epsilon -= self.decayAmount
         
@@ -107,13 +129,27 @@ class RL_PROCESSOR:
             action_ = torch.argmax(qval.detach()).item()      
         del image
         
-        average_loss = 0
-        if len(losses) > 0:
-            average_loss = sum(losses) / len(losses)
         
-        print(f"Average_loss: {average_loss}") 
+        if len(losses_arr) > 0:
+            average = sum(losses) / len(losses)
+            average_loss = average
         
+    
+        self.move_number += 1
+        self.total_rewards.append(reward)
+        rewards_combined = sum(self.total_rewards)
+        
+        if self.move_number % 100 == 0:
+            print(f"Action Number: {self.move_number}, Average Loss: {average_loss}, Total Reward: {rewards_combined}, Epsilon: {self.epsilon}, Buffer Length:{bufferLength}") 
+            
         return {"makeMove": self.moves[action_]}
+        
+        
+        
+        #TEST CODE WITHOUT NEURAL NET
+        # action_ = self.pick_random_move()
+        # action_ = self.find_key_by_value(action_)
+        # return {"makeMove": self.moves[action_]}
         
        
         
